@@ -3,21 +3,26 @@ import numpy as np
 from datetime import datetime
 from pytz import timezone
 from PIL import Image, ImageDraw, ImageFont
+import pathlib
 
 def generate_sudoku(difficulty):
     grid = [[0 for i in range(9)] for j in range(9)]
 
     solve_sudoku(grid)
 
-    if difficulty == 'easy':
-        num_cells_to_remove = 45
+    if difficulty == 'super easy':
+        num_cells_to_remove = 30
+    elif difficulty == 'easy':
+        num_cells_to_remove = 40
     elif difficulty == 'medium':
-        num_cells_to_remove = 51
+        num_cells_to_remove = 45
     elif difficulty == 'hard':
-        num_cells_to_remove = 57
+        num_cells_to_remove = 50
+    elif difficulty == 'expert':
+        num_cells_to_remove = 60
     else:
         print('Invalid difficulty level. Generating puzzle with medium difficulty.')
-        num_cells_to_remove = 51
+        num_cells_to_remove = 45
 
     for i in range(num_cells_to_remove):
         row, col = random.randint(0, 8), random.randint(0, 8)
@@ -90,9 +95,9 @@ def save_sudoku_image(grid, filename):
 
     return filename
 
-difficulty = input("Enter difficulty level (easy/medium/hard): ")
+difficulty = input("Enter difficulty level (super easy/easy/medium/hard/expert): ")
 grid = generate_sudoku(difficulty)
-filename = "sudoku.png"
-directory = r"C:\Users\jackr\OneDrive\Desktop\Games\Sudoku"
+filename = f"Sudoku {difficulty.capitalize()} {datetime.now(timezone('Australia/Sydney')).strftime('%d-%m-%Y %H-%M-%S')}.png"
+directory = pathlib.Path().absolute()
 save_sudoku_image(grid, filename)
 print(f"Sudoku puzzle saved as {filename} in the {directory} directory")
