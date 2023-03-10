@@ -4,12 +4,28 @@ from datetime import datetime
 from pytz import timezone
 from PIL import Image, ImageDraw, ImageFont
 import pathlib
+import copy
 
 def generate_sudoku(difficulty):
+    top_row = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    random.shuffle(top_row)
+
     grid = [[0 for i in range(9)] for j in range(9)]
+    for i in range(9):
+        grid[0][i] = top_row[i]
 
-    solve_sudoku(grid)
+    num_cells_to_remove = get_num_cells_to_remove(difficulty)
 
+    while True:
+        puzzle = copy.deepcopy(grid)
+        remove_cells(puzzle, num_cells_to_remove)
+        num_solutions = solve_sudoku(puzzle, count=True)
+        if num_solutions == 1:
+            break
+
+    return puzzle
+
+def get_num_cells_to_remove(difficulty):
     if difficulty == 'super easy':
         num_cells_to_remove = 30
     elif difficulty == 'easy':
@@ -24,28 +40,39 @@ def generate_sudoku(difficulty):
         print('Invalid difficulty level. Generating puzzle with medium difficulty.')
         num_cells_to_remove = 45
 
+    return num_cells_to_remove
+
+def remove_cells(grid, num_cells_to_remove):
     for i in range(num_cells_to_remove):
         row, col = random.randint(0, 8), random.randint(0, 8)
         while grid[row][col] == 0:
             row, col = random.randint(0, 8), random.randint(0, 8)
         grid[row][col] = 0
 
-    return grid
-
-def solve_sudoku(grid):
+def solve_sudoku(grid, count=False):
     row, col = find_empty_cell(grid)
 
     if row == -1 and col == -1:
-        return True
+        return 1
 
+    num_solutions = 0
     for num in range(1, 10):
         if is_valid_move(grid, row, col, num):
             grid[row][col] = num
 
-            if solve_sudoku(grid):
-                return True
+            if count:
+                num_solutions += solve_sudoku(grid, count=True)
+                if num_solutions > 1:
+                    return num_solutions
+            else:
+                if solve_sudoku(grid):
+                    return True
             grid[row][col] = 0
-    return False
+
+    if count:
+        return num_solutions
+    else:
+        return False
 
 def find_empty_cell(grid):
     for row in range(9):
